@@ -1,0 +1,22 @@
+#!/bin/bash
+
+need_rails=1
+
+if [ $# -gt 0 ]; then
+    filename=$1
+    # Remove trailing line numbers from filename, e.g. spec/my_spec.rb:33
+    grep_filename=`echo $1 | sed 's/:.*$//g'`
+
+    fgrep "'spec_helper" $grep_filename && need_rails=''
+else
+    filename='spec'
+fi
+
+command='rspec -fs'
+
+if [ $need_rails ]; then
+    command="ruby -S bundle exec $command"
+fi
+
+RAILS_ENV=test time $command $filename
+
