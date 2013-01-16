@@ -1,3 +1,5 @@
+require 'singleton'
+
 class EventBus
   include Singleton
 
@@ -23,6 +25,10 @@ class EventBus
     def respond(event_name, details)
       listener.send(method_name, details) if pattern === event_name
     end
+  end
+
+  def initialize
+    clear
   end
 
   def announce(event_name, details)
