@@ -7,6 +7,6 @@ Gem::Specification.new do |s|
   s.authors     = ['Kevin Rutherford']
   s.email       = 'kevin@rutherford-software.com'
   s.files       = ['lib/event_bus.rb']
-  s.homepage    = 'http://rubygems.org/gems/event_bus'
+  s.homepage    = 'http://github.com/kevinrutherford/event_bus'
 end
 
