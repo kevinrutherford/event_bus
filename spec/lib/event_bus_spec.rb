@@ -7,21 +7,51 @@ describe EventBus do
 
   before do
     EventBus.clear
-    EventBus.listen_for(event_name, listener, receiving_method)
   end
 
   describe '.announce' do
 
-    context 'with no payload' do
-      it 'sends an event to a listener' do
-        listener.should_receive(receiving_method)
-        EventBus.announce(event_name, {})
+    it 'returns itself, to facilitate cascades' do
+      EventBus.clear.should == EventBus
+    end
+
+    context 'when the listener is specific about the event name' do
+      it 'sends the event to the listener' do
+        EventBus.listen_for(event_name, listener, receiving_method)
+        listener.should_receive(receiving_method).with({a: 1, b: 2})
+        EventBus.announce(event_name, {a: 1, b: 2})
       end
     end
+
+    context 'when the listener uses a regex that matches' do
+      it 'sends the event to the listener' do
+        EventBus.listen_for(/123b/, listener, receiving_method)
+        listener.should_receive(receiving_method).with({a: 1, b: 2})
+        EventBus.announce(event_name, {a: 1, b: 2})
+      end
+    end
+
+    context 'when the listener listens for a different event' do
+      it 'does not send the event to the listener' do
+        EventBus.listen_for('blah', listener, receiving_method)
+        listener.should_not_receive(receiving_method)
+        EventBus.announce(event_name, {a: 1, b: 2})
+      end
+    end
+
+    context 'when the listener listens for a non-matching regex' do
+      it 'does not send the event to the listener' do
+        EventBus.listen_for(/123a/, listener, receiving_method)
+        listener.should_not_receive(receiving_method)
+        EventBus.announce(event_name, {a: 1, b: 2})
+      end
+    end
+
   end
 
   describe '.clear' do
     it 'sends no event to previous registrants' do
+      EventBus.listen_for(event_name, listener, receiving_method)
       EventBus.clear
       listener.should_not_receive(receiving_method)
       EventBus.announce(event_name, {})
