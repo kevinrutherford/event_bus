@@ -52,12 +52,6 @@ class EventBus
   class Registrations
     include Singleton
 
-    Registration = Struct.new(:pattern, :listener, :method_name) do
-      def respond(event_name, details)
-        listener.send(method_name, details) if pattern === event_name
-      end
-    end
-
     def initialize
       clear
     end
@@ -74,6 +68,14 @@ class EventBus
 
     def register(pattern, listener, method_name)
       @listeners << Registration.new(pattern, listener, method_name)
+    end
+
+    private
+
+    Registration = Struct.new(:pattern, :listener, :method_name) do
+      def respond(event_name, details)
+        listener.send(method_name, details) if pattern === event_name
+      end
     end
 
   end
