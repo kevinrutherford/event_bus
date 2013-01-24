@@ -2,7 +2,7 @@
 
 A simple pubsub event bus.
 
-![Build Status](https://travis-ci.org/kevinrutherford/event_bus.png)](https://travis-ci.org/kevinrutherford/event_bus)
+[![Build Status](https://travis-ci.org/kevinrutherford/event_bus.png)](https://travis-ci.org/kevinrutherford/event_bus)
 
 * <https://rubygems.org/gems/event_bus>
 * <http://rubydoc.info/gems/event_bus/frames>

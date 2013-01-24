@@ -18,16 +18,16 @@ describe EventBus do
     context 'when the listener is specific about the event name' do
       it 'sends the event to the listener' do
         EventBus.listen_for(event_name, listener, receiving_method)
-        listener.should_receive(receiving_method).with({a: 1, b: 2})
-        EventBus.announce(event_name, {a: 1, b: 2})
+        listener.should_receive(receiving_method).with({:a => 1, :b => 2})
+        EventBus.announce(event_name, {:a => 1, :b => 2})
       end
     end
 
     context 'when the listener uses a regex that matches' do
       it 'sends the event to the listener' do
         EventBus.listen_for(/123b/, listener, receiving_method)
-        listener.should_receive(receiving_method).with({a: 1, b: 2})
-        EventBus.announce(event_name, {a: 1, b: 2})
+        listener.should_receive(receiving_method).with({:a => 1, :b => 2})
+        EventBus.announce(event_name, {:a => 1, :b => 2})
       end
     end
 
@@ -35,7 +35,7 @@ describe EventBus do
       it 'does not send the event to the listener' do
         EventBus.listen_for('blah', listener, receiving_method)
         listener.should_not_receive(receiving_method)
-        EventBus.announce(event_name, {a: 1, b: 2})
+        EventBus.announce(event_name, {:a => 1, :b => 2})
       end
     end
 
@@ -43,7 +43,7 @@ describe EventBus do
       it 'does not send the event to the listener' do
         EventBus.listen_for(/123a/, listener, receiving_method)
         listener.should_not_receive(receiving_method)
-        EventBus.announce(event_name, {a: 1, b: 2})
+        EventBus.announce(event_name, {:a => 1, :b => 2})
       end
     end
 
