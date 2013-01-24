@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rspec', '~> 2.12'
   s.add_development_dependency 'simplecov'
 
-  s.files          = FileList['lib/**/*.rb', '[A-Z]*', 'spec/**/*'].to_a
+  s.files          = `git ls-files -- lib spec [A-Z]*`.split("\n")
   s.test_files     = `git ls-files -- spec`.split("\n")
   s.require_path   = 'lib'
 
