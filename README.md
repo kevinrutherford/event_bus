@@ -1,12 +1,20 @@
-# event_bus
+# EventBus
 
-A simple pubsub event bus.
+A simple pubsub event bus for Ruby applications.
 
 [![Build Status](https://travis-ci.org/kevinrutherford/event_bus.png)](https://travis-ci.org/kevinrutherford/event_bus)
 
 * <https://rubygems.org/gems/event_bus>
 * <http://rubydoc.info/gems/event_bus/frames>
 * <https://github.com/kevinrutherford/event_bus>
+
+## Features
+
+* Simple, global support for the Observer pattern, aka Publisher-Subscriber.
+* Publish and subscribe to events throughout your Ruby application.
+* Listen for events without coupling to the publishing object or class.
+* Subscribe to events using names or regex patterns.
+* Works with Rails.
 
 ## Installation
 
@@ -21,6 +29,40 @@ Or add it to your Gemfile and run `bundle`.
 ``` ruby
 gem 'event_bus'
 ```
+
+## Usage
+
+Subscribe to an event in your application's initialization code:
+
+```ruby
+EventBus.listen_for('order-placed', StatsRecorder.new, :order_placed)
+```
+
+Fire the event whenever something significant happens in your application:
+
+```ruby
+class PlaceOrder
+  //...
+  EventBus.listen_for('order-placed', :order => current_order, :customer => current_user)
+end
+```
+
+Handle the event without coupling the publisher or subscriber:
+
+```ruby
+class StatsRecorder
+  def order_placed(details)
+    order = details[:order]
+    //...
+  end
+end
+```
+
+## Compatibility
+
+Tested with Ruby 1.8.7, 1.9.x, JRuby, Rubinius.
+See the [build status](https://travis-ci.org/kevinrutherford/event_bus)
+for details.
 
 ## License
 
