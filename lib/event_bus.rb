@@ -5,12 +5,15 @@ class EventBus
   #
   # Announce an event to any waiting listeners.
   #
+  # The +event_name+ is added to the +details+ hash (with the key +:event_name+)
+  # before the event is passed on to listeners.
+  #
   # @param event_name [String, Symbol] the name of your event
   # @param details [Hash] the information you want to pass to the listeners
   # @return the EventBus, ready to be called again.
   #
   def self.announce(event_name, details)
-    Registrations.instance.announce(event_name, details)
+    registrations.announce(event_name, details)
     self
   end
 
@@ -23,7 +26,7 @@ class EventBus
   # @return the EventBus, ready to be called again.
   #
   def self.listen_for(pattern, listener, method_name)
-    Registrations.instance.register(pattern, listener, method_name)
+    registrations.register(pattern, listener, method_name)
     self
   end
 
@@ -33,7 +36,7 @@ class EventBus
   # @return the EventBus, ready to be called again.
   #
   def self.clear
-    Registrations.instance.clear
+    registrations.clear
     self
   end
 
@@ -42,12 +45,16 @@ class EventBus
   #
   def self.register(listener)
     listener.events_map.each do |pattern, method_name|
-      Registrations.instance.register(pattern, listener, method_name)
+      registrations.register(pattern, listener, method_name)
     end
     self
   end
 
   private
+
+  def self.registrations
+    Registrations.instance
+  end
 
   class Registrations
     include Singleton
@@ -57,8 +64,9 @@ class EventBus
     end
 
     def announce(event_name, details)
+      info = {:event_name => event_name}.merge(details)
       @listeners.each do |listener|
-        listener.respond(event_name, details)
+        listener.respond(event_name, info)
       end
     end
 
