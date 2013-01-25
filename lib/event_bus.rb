@@ -14,7 +14,7 @@ class EventBus
     # @param details [Hash] the information you want to pass to the listeners
     # @return the EventBus, ready to be called again.
     #
-    def publish(event_name, details)
+    def publish(event_name, details = {})
       registrations.announce(event_name, details)
       self
     end
