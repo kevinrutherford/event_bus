@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.email       = 'kevin@rutherford-software.com'
   s.homepage    = 'http://github.com/kevinrutherford/event_bus'
 
-  s.add_development_dependency 'rake', '~> 0.9.2'
+  s.add_development_dependency 'rake', '~> 10.0.1'
   s.add_development_dependency 'rspec', '~> 2.12'
   s.add_development_dependency 'simplecov'
 

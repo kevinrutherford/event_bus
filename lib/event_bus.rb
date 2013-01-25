@@ -27,11 +27,11 @@ class EventBus
     #
     # @param pattern [String, Regex] listen for any events whose name matches this pattern
     # @param listener the object to be notified when a matching event occurs
-    # @param method_name [Symbol] the method to be called on listener when a matching event occurs
+    # @param method_name [Symbol] the method to be called on +listener+ when a matching event occurs
     # @return the EventBus, ready to be called again.
     #
     def subscribe(pattern, listener, method_name)
-      registrations.register(pattern, listener, method_name)
+      registrations.add(pattern, listener, method_name)
       self
     end
 
@@ -52,7 +52,7 @@ class EventBus
     #
     def register(listener)
       listener.events_map.each do |pattern, method_name|
-        registrations.register(pattern, listener, method_name)
+        registrations.add(pattern, listener, method_name)
       end
       self
     end
@@ -83,7 +83,7 @@ class EventBus
       @listeners = []
     end
 
-    def register(pattern, listener, method_name)
+    def add(pattern, listener, method_name)
       @listeners << Registration.new(pattern, listener, method_name)
     end
 
