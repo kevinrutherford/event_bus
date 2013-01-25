@@ -21,7 +21,7 @@ describe EventBus do
       EventBus.publish(event_name, {})
     end
 
-    it 'accepts a missing details hash' do
+    it 'allows the details hash to be omitted' do
       EventBus.subscribe(event_name, listener, receiving_method)
       listener.should_receive(receiving_method).with(:event_name => event_name)
       EventBus.publish(event_name)
@@ -35,32 +35,28 @@ describe EventBus do
       EventBus.subscribe(event_name, listener, receiving_method).should == EventBus
     end
 
-    context 'when the listener is specific about the event name' do
-      it 'sends the event to the listener' do
+    context 'accepts a string event name' do
+      it 'sends the event to a matching listener' do
         EventBus.subscribe(event_name, listener, receiving_method)
         listener.should_receive(receiving_method).with(:a => 1, :b => 2, :event_name => event_name)
         EventBus.publish(event_name, :a => 1, :b => 2)
       end
-    end
 
-    context 'when the listener uses a regex that matches' do
-      it 'sends the event to the listener' do
-        EventBus.subscribe(/123b/, listener, receiving_method)
-        listener.should_receive(receiving_method).with(:a => 1, :b => 2, :event_name => event_name)
-        EventBus.publish(event_name, :a => 1, :b => 2)
-      end
-    end
-
-    context 'when the listener listens for a different event' do
-      it 'does not send the event to the listener' do
+      it 'does not send the event to non-matching listeners' do
         EventBus.subscribe('blah', listener, receiving_method)
         listener.should_not_receive(receiving_method)
         EventBus.publish(event_name, :a => 1, :b => 2, :event_name => event_name)
       end
     end
 
-    context 'when the listener listens for a non-matching regex' do
-      it 'does not send the event to the listener' do
+    context 'accepts a regex event name' do
+      it 'sends the event to a matching listener' do
+        EventBus.subscribe(/123b/, listener, receiving_method)
+        listener.should_receive(receiving_method).with(:a => 1, :b => 2, :event_name => event_name)
+        EventBus.publish(event_name, :a => 1, :b => 2)
+      end
+
+      it 'does not send the event to non-matching listeners' do
         EventBus.subscribe(/123a/, listener, receiving_method)
         listener.should_not_receive(receiving_method)
         EventBus.publish(event_name, :a => 1, :b => 2, :event_name => event_name)
