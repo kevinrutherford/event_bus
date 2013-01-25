@@ -45,7 +45,7 @@ Fire the event whenever something significant happens in your application:
 ```ruby
 class PlaceOrder
   //...
-  EventBus.listen_for('order-placed', :order => current_order, :customer => current_user)
+  EventBus.announce('order-placed', :order => current_order, :customer => current_user)
 end
 ```
 
