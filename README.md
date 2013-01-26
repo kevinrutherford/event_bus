@@ -60,6 +60,8 @@ class StatsRecorder
 end
 ```
 
+See the specs for more detailed usage scenarios.
+
 ## Compatibility
 
 Tested with Ruby 1.8.7, 1.9.x, JRuby, Rubinius.
