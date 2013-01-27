@@ -30,8 +30,15 @@ class EventBus
     # @param method_name [Symbol] the method to be called on +listener+ when a matching event occurs
     # @return the EventBus, ready to be called again.
     #
-    def subscribe(pattern, listener, method_name)
-      registrations.add(pattern, listener, method_name)
+    def subscribe(pattern, listener = nil, method_name = nil, &blk)
+      if listener
+        raise ArgumentError.new('You cannot give both a listener and a block') if block_given?
+        raise ArgumentError.new('You must supply a method name') unless method_name
+        registrations.add_method(pattern, listener, method_name)
+      else
+        raise ArgumentError.new('You must provide a listener or a block') unless block_given?
+        registrations.add_block(pattern, blk)
+      end
       self
     end
 
@@ -83,8 +90,20 @@ class EventBus
       @listeners = []
     end
 
-    def add(pattern, listener, method_name)
+    def add(pattern, listener, method_name, &blk)
+      if listener
+        add_method(pattern, listener, method_name)
+      else
+        add_block(pattern, blk)
+      end
+    end
+
+    def add_method(pattern, listener, method_name)
       @listeners << Registration.new(pattern, listener, method_name)
+    end
+
+    def add_block(pattern, blk)
+      @listeners << BlockRegistration.new(pattern, blk)
     end
 
     private
@@ -92,6 +111,12 @@ class EventBus
     Registration = Struct.new(:pattern, :listener, :method_name) do
       def respond(event_name, details)
         listener.send(method_name, details) if pattern === event_name
+      end
+    end
+
+    BlockRegistration = Struct.new(:pattern, :block) do
+      def respond(event_name, details)
+        block.call(details) if pattern === event_name
       end
     end
 

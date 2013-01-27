@@ -37,7 +37,25 @@ gem 'event_bus'
 Subscribe to an event in your application's initialization code:
 
 ```ruby
-EventBus.listen_for('order-placed', StatsRecorder.new, :order_placed)
+EventBus.subscribe('order-placed', StatsRecorder.new, :order_placed)
+```
+
+```ruby
+class StatsRecorder
+  def order_placed(details)
+    order = details[:order]
+    //...
+  end
+end
+```
+
+Or subscribe a block:
+
+```ruby
+EventBus.subscribe('order-placed') do |details|
+  order = details[:order]
+  //...
+end
 ```
 
 Fire the event whenever something significant happens in your application:
@@ -46,17 +64,6 @@ Fire the event whenever something significant happens in your application:
 class PlaceOrder
   //...
   EventBus.announce('order-placed', :order => current_order, :customer => current_user)
-end
-```
-
-Handle the event without coupling the publisher or subscriber:
-
-```ruby
-class StatsRecorder
-  def order_placed(details)
-    order = details[:order]
-    //...
-  end
 end
 ```
 
