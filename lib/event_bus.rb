@@ -23,7 +23,12 @@ class EventBus
     alias :broadcast :publish
 
     #
-    # Register a single listener.
+    # Subscribe to all events matching +pattern+.
+    #
+    # Either +listener+ or +blk+ must be provided, both never both.
+    #
+    # When a matching event occurs, either the block is called or the +method_name+
+    # method on the +listener+ object is called.
     #
     # @param pattern [String, Regex] listen for any events whose name matches this pattern
     # @param listener the object to be notified when a matching event occurs

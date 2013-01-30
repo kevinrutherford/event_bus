@@ -63,7 +63,21 @@ describe EventBus do
       end
     end
 
-    context 'can take a block or a receiver' do
+    context 'listener variant' do
+      it 'will not accept a block too' do
+        expect { EventBus.subscribe('blah', listener, receiving_method) {|info| }}.to raise_error(ArgumentError)
+      end
+
+      it 'expects a method name' do
+        expect { EventBus.subscribe('blah', listener)}.to raise_error(ArgumentError)
+      end
+    end
+
+    context 'block variant' do
+      it 'requires a block when no listener method is supplied' do
+        expect { EventBus.subscribe('blah')}.to raise_error(ArgumentError)
+      end
+
       it 'calls the block when the event matches' do
         block_called = false
         EventBus.subscribe(event_name) do |info|
@@ -79,22 +93,6 @@ describe EventBus do
         EventBus.subscribe('blah') {|_| block_called = true }
         EventBus.publish(event_name, :a => 1, :b => 2)
         block_called.should be_false
-      end
-    end
-
-    context 'listener variant' do
-      it 'will not accept a block too' do
-        expect { EventBus.subscribe('blah', listener, receiving_method) {|info| }}.to raise_error(ArgumentError)
-      end
-
-      it 'expects a method name' do
-        expect { EventBus.subscribe('blah', listener)}.to raise_error(ArgumentError)
-      end
-    end
-
-    context 'block variant' do
-      it 'requires a block when no listener method is supplied' do
-        expect { EventBus.subscribe('blah')}.to raise_error(ArgumentError)
       end
     end
 

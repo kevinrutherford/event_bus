@@ -34,7 +34,7 @@ gem 'event_bus'
 
 ## Usage
 
-Subscribe to an event in your application's initialization code:
+Subscribe a method call to an event:
 
 ```ruby
 EventBus.subscribe('order-placed', StatsRecorder.new, :order_placed)
