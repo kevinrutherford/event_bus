@@ -5,6 +5,8 @@ A simple pubsub event bus for Ruby applications.
 [![Build Status](https://travis-ci.org/kevinrutherford/event_bus.png)](https://travis-ci.org/kevinrutherford/event_bus)
 [![Dependency
 Status](https://gemnasium.com/kevinrutherford/event_bus.png)](https://gemnasium.com/kevinrutherford/event_bus)
+[![Code
+Climate](https://codeclimate.com/github/kevinrutherford/event_bus.png)](https://codeclimate.com/github/kevinrutherford/event_bus)
 
 * <https://rubygems.org/gems/event_bus>
 * <http://rubydoc.info/gems/event_bus/frames>
