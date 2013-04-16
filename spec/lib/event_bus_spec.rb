@@ -96,6 +96,27 @@ describe EventBus do
       end
     end
 
+    context 'subscribing an object' do
+
+      it 'calls a listener method whose name matches the event name' do
+        listener.should_receive(:a_method).with(:a => 2, :b => 3, :event_name => 'a_method')
+        EventBus.subscribe(listener)
+        EventBus.publish('a_method', :a => 2, :b => 3)
+      end
+
+      it 'calls a listener method with symbol whose name matches the event name' do
+        listener.should_receive(:a_method).with(:a => 2, :b => 3, :event_name => :a_method)
+        EventBus.subscribe(listener)
+        EventBus.publish(:a_method, :a => 2, :b => 3)
+      end
+
+      it 'calls no method when there is no name match' do
+        listener.should_not_receive(:a_method)
+        EventBus.subscribe(listener)
+        EventBus.publish('b_method')
+      end
+    end
+
   end
 
   describe '.clear' do

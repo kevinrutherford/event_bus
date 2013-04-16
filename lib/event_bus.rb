@@ -36,18 +36,36 @@ class EventBus
     # @return the EventBus, ready to be called again.
     #
     def subscribe(pattern, listener = nil, method_name = nil, &blk)
+      case pattern
+      when Regexp, String
+        subscribe_pattern(pattern, listener, method_name, &blk)
+      else
+        subscribe_obj(pattern)
+      end
+      self
+    end
+
+    alias :listen_for :subscribe
+
+    def subscribe_pattern(pattern, listener, method_name, &blk)
       if listener
         raise ArgumentError.new('You cannot give both a listener and a block') if block_given?
         raise ArgumentError.new('You must supply a method name') unless method_name
         registrations.add_method(pattern, listener, method_name)
       else
         raise ArgumentError.new('You must provide a listener or a block') unless block_given?
-        registrations.add_block(pattern, blk)
+        registrations.add_block(pattern, &blk)
       end
-      self
     end
 
-    alias :listen_for :subscribe
+    def subscribe_obj(listener)
+      registrations.add_block(/.*/) {|payload|
+        method = payload[:event_name].to_sym
+        listener.send(method, payload) if listener.respond_to?(method)
+      }
+    end
+
+    private :subscribe_obj, :subscribe_pattern
 
     #
     # Delete all current listener registrations
@@ -107,7 +125,7 @@ class EventBus
       @listeners << Registration.new(pattern, listener, method_name)
     end
 
-    def add_block(pattern, blk)
+    def add_block(pattern, &blk)
       @listeners << BlockRegistration.new(pattern, blk)
     end
 
