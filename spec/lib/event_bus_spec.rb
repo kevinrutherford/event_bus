@@ -11,6 +11,23 @@ describe EventBus do
 
   describe 'publishing' do
 
+    it 'accepts a string for the event name' do
+      EventBus.subscribe(/#{event_name}/, listener, receiving_method)
+      listener.should_receive(receiving_method).with(:event_name => event_name)
+      EventBus.publish(event_name)
+    end
+
+    it 'accepts a symbol for the event name' do
+      event_sym = :abc_123
+      EventBus.subscribe(/#{event_sym}/, listener, receiving_method)
+      listener.should_receive(receiving_method).with(:event_name => event_sym)
+      EventBus.publish(event_sym)
+    end
+
+    it 'rejects any other type as the event name' do
+      expect { EventBus.publish(123) }.to raise_error(ArgumentError)
+    end
+
     it 'returns itself, to facilitate cascades' do
       EventBus.publish(event_name, {}).should == EventBus
     end

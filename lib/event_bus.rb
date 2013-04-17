@@ -15,8 +15,13 @@ class EventBus
     # @return the EventBus, ready to be called again.
     #
     def publish(event_name, payload = {})
-      registrations.announce(event_name, payload)
-      self
+      case event_name
+      when Symbol, String
+        registrations.announce(event_name, payload)
+        self
+      else
+        raise ArgumentError.new('The event name must be a string or a symbol')
+      end
     end
 
     alias :announce :publish
@@ -30,7 +35,7 @@ class EventBus
     # When a matching event occurs, either the block is called or the +method_name+
     # method on the +listener+ object is called.
     #
-    # @param pattern [String, Regex] listen for any events whose name matches this pattern
+    # @param pattern [String, Regexp] listen for any events whose name matches this pattern
     # @param listener the object to be notified when a matching event occurs
     # @param method_name [Symbol] the method to be called on +listener+ when a matching event occurs
     # @return the EventBus, ready to be called again.
@@ -139,7 +144,7 @@ class EventBus
 
     BlockRegistration = Struct.new(:pattern, :block) do
       def respond(event_name, payload)
-        block.call(payload) if pattern === event_name
+        block.call(payload) if pattern === event_name.to_s
       end
     end
 
