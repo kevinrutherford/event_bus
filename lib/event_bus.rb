@@ -108,7 +108,7 @@ class EventBus
     end
 
     def announce(event_name, payload)
-      full_payload = {:event_name => event_name}.merge(payload)
+      full_payload = {event_name: event_name}.merge(payload)
       @listeners.each do |listener|
         listener.respond(event_name, full_payload)
       end
@@ -144,7 +144,7 @@ class EventBus
 
     BlockRegistration = Struct.new(:pattern, :block) do
       def respond(event_name, payload)
-        block.call(payload) if pattern === event_name.to_s
+        block.call(payload) if pattern === event_name
       end
     end
 
