@@ -9,6 +9,7 @@ pkg
 rdoc
 .rvmrc
 spec/reports
+tags
 test/tmp
 test/version_tmp
 tmp

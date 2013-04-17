@@ -9,19 +9,19 @@ describe EventBus do
     EventBus.clear
   end
 
-  describe '.publish' do
+  describe 'publishing' do
 
     it 'returns itself, to facilitate cascades' do
       EventBus.publish(event_name, {}).should == EventBus
     end
 
-    it 'passes the event name in the details hash' do
+    it 'adds the event name to the payload' do
       EventBus.subscribe(event_name, listener, receiving_method)
-      listener.should_receive(receiving_method).with(:event_name => event_name)
-      EventBus.publish(event_name, {})
+      listener.should_receive(receiving_method).with(:event_name => event_name, :a => 56)
+      EventBus.publish(event_name, :a => 56)
     end
 
-    it 'allows the details hash to be omitted' do
+    it 'allows the payload to be omitted' do
       EventBus.subscribe(event_name, listener, receiving_method)
       listener.should_receive(receiving_method).with(:event_name => event_name)
       EventBus.publish(event_name)
@@ -29,7 +29,7 @@ describe EventBus do
 
   end
 
-  describe '.subscribe' do
+  describe 'subscribing' do
 
     it 'returns itself, to facilitate cascades' do
       EventBus.subscribe(event_name, listener, receiving_method).should == EventBus
@@ -63,19 +63,19 @@ describe EventBus do
       end
     end
 
-    context 'listener variant' do
+    context 'with a listener method' do
       it 'will not accept a block too' do
         expect { EventBus.subscribe('blah', listener, receiving_method) {|info| }}.to raise_error(ArgumentError)
       end
 
       it 'expects a method name' do
-        expect { EventBus.subscribe('blah', listener)}.to raise_error(ArgumentError)
+        expect { EventBus.subscribe('blah', listener) }.to raise_error(ArgumentError)
       end
     end
 
-    context 'block variant' do
+    context 'with a block' do
       it 'requires a block when no listener method is supplied' do
-        expect { EventBus.subscribe('blah')}.to raise_error(ArgumentError)
+        expect { EventBus.subscribe('blah') }.to raise_error(ArgumentError)
       end
 
       it 'calls the block when the event matches' do
@@ -91,12 +91,12 @@ describe EventBus do
       it 'does not call the block when the event does not match' do
         block_called = false
         EventBus.subscribe('blah') {|_| block_called = true }
-        EventBus.publish(event_name, :a => 1, :b => 2)
+        EventBus.publish(event_name)
         block_called.should be_false
       end
     end
 
-    context 'subscribing an object' do
+    context 'with a listener object' do
 
       it 'calls a listener method whose name matches the event name' do
         listener.should_receive(:a_method).with(:a => 2, :b => 3, :event_name => 'a_method')

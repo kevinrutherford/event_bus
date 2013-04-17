@@ -7,15 +7,15 @@ class EventBus
     #
     # Announce an event to any waiting listeners.
     #
-    # The +event_name+ is added to the +details+ hash (with the key +:event_name+)
+    # The +event_name+ is added to the +payload+ hash (with the key +:event_name+)
     # before the event is passed on to listeners.
     #
     # @param event_name [String, Symbol] the name of your event
-    # @param details [Hash] the information you want to pass to the listeners
+    # @param payload [Hash] the information you want to pass to the listeners
     # @return the EventBus, ready to be called again.
     #
-    def publish(event_name, details = {})
-      registrations.announce(event_name, details)
+    def publish(event_name, payload = {})
+      registrations.announce(event_name, payload)
       self
     end
 
@@ -59,10 +59,10 @@ class EventBus
     end
 
     def subscribe_obj(listener)
-      registrations.add_block(/.*/) {|payload|
+      registrations.add_block(/.*/) do |payload|
         method = payload[:event_name].to_sym
         listener.send(method, payload) if listener.respond_to?(method)
-      }
+      end
     end
 
     private :subscribe_obj, :subscribe_pattern
@@ -102,10 +102,10 @@ class EventBus
       clear
     end
 
-    def announce(event_name, details)
-      info = {:event_name => event_name}.merge(details)
+    def announce(event_name, payload)
+      full_payload = {:event_name => event_name}.merge(payload)
       @listeners.each do |listener|
-        listener.respond(event_name, info)
+        listener.respond(event_name, full_payload)
       end
     end
 
@@ -132,14 +132,14 @@ class EventBus
     private
 
     Registration = Struct.new(:pattern, :listener, :method_name) do
-      def respond(event_name, details)
-        listener.send(method_name, details) if pattern === event_name
+      def respond(event_name, payload)
+        listener.send(method_name, payload) if pattern === event_name
       end
     end
 
     BlockRegistration = Struct.new(:pattern, :block) do
-      def respond(event_name, details)
-        block.call(details) if pattern === event_name
+      def respond(event_name, payload)
+        block.call(payload) if pattern === event_name
       end
     end
 
