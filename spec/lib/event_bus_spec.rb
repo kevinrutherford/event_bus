@@ -132,6 +132,15 @@ describe EventBus do
         EventBus.subscribe(listener)
         EventBus.publish('b_method')
       end
+
+      it 'will not accept other arguments' do
+        expect { EventBus.subscribe(listener, double) }.to raise_error(ArgumentError)
+      end
+
+      it 'will not accept a block' do
+        expect { EventBus.subscribe(listener) {|info| }}.to raise_error(ArgumentError)
+      end
+
     end
 
   end

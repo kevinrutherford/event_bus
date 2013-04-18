@@ -59,6 +59,8 @@ class EventBus
       when Regexp, String
         subscribe_pattern(pattern, listener, method_name, &blk)
       else
+        raise ArgumentError.new('You cannot give two listeners') if listener || method_name
+        raise ArgumentError.new('You cannot give both a listener and a block') if block_given?
         subscribe_obj(pattern)
       end
       self
