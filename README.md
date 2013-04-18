@@ -8,9 +8,9 @@ Status](https://gemnasium.com/kevinrutherford/event_bus.png)](https://gemnasium.
 [![Code
 Climate](https://codeclimate.com/github/kevinrutherford/event_bus.png)](https://codeclimate.com/github/kevinrutherford/event_bus)
 
-* <https://rubygems.org/gems/event_bus>
-* <http://rubydoc.info/gems/event_bus/frames>
-* <https://github.com/kevinrutherford/event_bus>
+* Gem: <https://rubygems.org/gems/event_bus>
+* API docs: <http://rubydoc.info/gems/event_bus/frames>
+* Source code: <https://github.com/kevinrutherford/event_bus>
 
 ## Features
 
@@ -19,6 +19,7 @@ Climate](https://codeclimate.com/github/kevinrutherford/event_bus.png)](https://
 * Listen for events without coupling to the publishing object or class.
 * Subscribe to events using names or regex patterns.
 * Works with Rails.
+* Works without Rails.
 
 ## Installation
 
@@ -36,44 +37,93 @@ gem 'event_bus'
 
 ## Usage
 
-Subscribe a method call to an event:
+### Publishing events
 
-```ruby
-EventBus.subscribe('order-placed', StatsRecorder.new, :order_placed)
-```
-
-```ruby
-class StatsRecorder
-  def order_placed(details)
-    order = details[:order]
-    //...
-  end
-end
-```
-
-Or subscribe a block:
-
-```ruby
-EventBus.subscribe('order-placed') do |details|
-  order = details[:order]
-  //...
-end
-```
-
-Fire the event whenever something significant happens in your application:
+Publish events whenever something significant happens in your application:
 
 ```ruby
 class PlaceOrder
   //...
-  EventBus.announce('order-placed', :order => current_order, :customer => current_user)
+  EventBus.announce(:order_placed, order: current_order, customer: current_user)
 end
 ```
+
+The event name (first argument) can be a String or a Symbol.
+The Hash is optional and supplies a payload of information to any subscribers.
+
+(If you don't like the method name `announce` you can use `publish` or
+`broadcast` instead.)
+
+### Subscribing to events
+
+There are three ways to subscribe to events.
+
+1. Subscribe a listener object:
+
+    ```ruby
+    EventBus.subscribe(StatsRecorder.new)
+    ```
+
+    The event will be handled by a method whose name matches the event name:
+
+    ```ruby
+    class StatsRecorder
+      def order_placed(payload)
+        order = payload[:order]
+        //...
+      end
+    end
+    ```
+
+    If the object has no matching method, it doesn't receive the event.
+
+2. Specify the method to be called when the event fires:
+
+    ```ruby
+    EventBus.subscribe(:order_placed, StatsRecorder.new, :print_order)
+    ```
+
+    In this case the event will be handled by the `print_order` method:
+
+    ```ruby
+    class StatsRecorder
+      def print_order(payload)
+        order = payload[:order]
+        //...
+      end
+    end
+    ```
+
+    The first argument to `subscribe` can be a String,
+    a Symbol or a Regexp:
+
+    ```ruby
+    EventBus.subscribe(/order/, StatsRecorder.new, :print_order)
+    ```
+
+3. Subscribe a block:
+
+    ```ruby
+    EventBus.subscribe(:order_placed) do |payload|
+      order = payload[:order]
+      //...
+    end
+    ```
+
+    The argument to `subscribe` can be a String, a Symbol or a Regexp:
+
+    ```ruby
+    EventBus.subscribe(/order/) do |payload|
+      order = payload[:order]
+      //...
+    end
+    ```
 
 See the specs for more detailed usage scenarios.
 
 ## Compatibility
 
-Tested with Ruby 1.8.7, 1.9.x, JRuby, Rubinius.
+Tested with Ruby 1.9.x, JRuby, Rubinius.
 See the [build status](https://travis-ci.org/kevinrutherford/event_bus)
 for details.
 

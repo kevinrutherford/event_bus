@@ -8,11 +8,11 @@ class EventBus
     # Announce an event to any waiting listeners.
     #
     # The +event_name+ is added to the +payload+ hash (with the key +:event_name+)
-    # before the event is passed on to listeners.
+    # before being passed on to listeners.
     #
     # @param event_name [String, Symbol] the name of your event
     # @param payload [Hash] the information you want to pass to the listeners
-    # @return the EventBus, ready to be called again.
+    # @return [EventBus] the EventBus, ready to be called again.
     #
     def publish(event_name, payload = {})
       case event_name
@@ -28,7 +28,21 @@ class EventBus
     alias :broadcast :publish
 
     #
-    # Subscribe to all events matching +pattern+.
+    # Subscribe to a set of events.
+    #
+    # If +blk+ is supplied, it will be called with any event whose name
+    # matches +pattern+.
+    #
+    # If no block is given, and if +pattern+ is a String or a Regexp,
+    # a method will be called on +listener+ whenever an event matching
+    # +pattern+ occurs. In this case, if +method_name+ is supplied the
+    # EventBus will look for, and call, a method of that name on +listener+;
+    # otherwise if +method_name+ is not given, the EventBus will attempt to
+    # call a method whose name matches the event's name.
+    #
+    # Finally, if no block is given and +pattern+ is not a String or a Regexp,
+    # then +pattern+ is taken to be a listener object and the EventBus will
+    # attempt to call a method on it whose name matches the event's name.
     #
     # Either +listener+ or +blk+ must be provided, both never both.
     #
@@ -38,7 +52,7 @@ class EventBus
     # @param pattern [String, Regexp] listen for any events whose name matches this pattern
     # @param listener the object to be notified when a matching event occurs
     # @param method_name [Symbol] the method to be called on +listener+ when a matching event occurs
-    # @return the EventBus, ready to be called again.
+    # @return [EventBus] the EventBus, ready to be called again.
     #
     def subscribe(pattern, listener = nil, method_name = nil, &blk)
       case pattern
@@ -51,26 +65,6 @@ class EventBus
     end
 
     alias :listen_for :subscribe
-
-    def subscribe_pattern(pattern, listener, method_name, &blk)
-      if listener
-        raise ArgumentError.new('You cannot give both a listener and a block') if block_given?
-        raise ArgumentError.new('You must supply a method name') unless method_name
-        registrations.add_method(pattern, listener, method_name)
-      else
-        raise ArgumentError.new('You must provide a listener or a block') unless block_given?
-        registrations.add_block(pattern, &blk)
-      end
-    end
-
-    def subscribe_obj(listener)
-      registrations.add_block(/.*/) do |payload|
-        method = payload[:event_name].to_sym
-        listener.send(method, payload) if listener.respond_to?(method)
-      end
-    end
-
-    private :subscribe_obj, :subscribe_pattern
 
     #
     # Delete all current listener registrations
@@ -93,6 +87,24 @@ class EventBus
     end
 
     private
+
+    def subscribe_pattern(pattern, listener, method_name, &blk)
+      if listener
+        raise ArgumentError.new('You cannot give both a listener and a block') if block_given?
+        raise ArgumentError.new('You must supply a method name') unless method_name
+        registrations.add_method(pattern, listener, method_name)
+      else
+        raise ArgumentError.new('You must provide a listener or a block') unless block_given?
+        registrations.add_block(pattern, &blk)
+      end
+    end
+
+    def subscribe_obj(listener)
+      registrations.add_block(/.*/) do |payload|
+        method = payload[:event_name].to_sym
+        listener.send(method, payload) if listener.respond_to?(method)
+      end
+    end
 
     def registrations
       Registrations.instance

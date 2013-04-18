@@ -2,6 +2,8 @@ require 'singleton'
 
 class EventBus
 
+  private
+
   class Registrations
     include Singleton
 
