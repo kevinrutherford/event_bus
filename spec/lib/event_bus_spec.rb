@@ -52,21 +52,7 @@ describe EventBus do
       EventBus.subscribe(event_name, listener, receiving_method).should == EventBus
     end
 
-    context 'accepts a string event name' do
-      it 'sends the event to a matching listener' do
-        EventBus.subscribe(event_name, listener, receiving_method)
-        listener.should_receive(receiving_method).with(a: 1, b: 2, event_name: event_name)
-        EventBus.publish(event_name, a: 1, b: 2)
-      end
-
-      it 'does not send the event to non-matching listeners' do
-        EventBus.subscribe('blah', listener, receiving_method)
-        listener.should_not_receive(receiving_method)
-        EventBus.publish(event_name, a: 1, b: 2, event_name: event_name)
-      end
-    end
-
-    context 'accepts a regex event name' do
+    context 'with a regex pattern' do
       it 'sends the event to a matching listener' do
         EventBus.subscribe(/123b/, listener, receiving_method)
         listener.should_receive(receiving_method).with(a: 1, b: 2, event_name: event_name)
@@ -75,6 +61,20 @@ describe EventBus do
 
       it 'does not send the event to non-matching listeners' do
         EventBus.subscribe(/123a/, listener, receiving_method)
+        listener.should_not_receive(receiving_method)
+        EventBus.publish(event_name, a: 1, b: 2, event_name: event_name)
+      end
+    end
+
+    context 'with a string pattern' do
+      it 'sends the event to a matching listener' do
+        EventBus.subscribe(event_name, listener, receiving_method)
+        listener.should_receive(receiving_method).with(a: 1, b: 2, event_name: event_name)
+        EventBus.publish(event_name, a: 1, b: 2)
+      end
+
+      it 'does not send the event to non-matching listeners' do
+        EventBus.subscribe('blah', listener, receiving_method)
         listener.should_not_receive(receiving_method)
         EventBus.publish(event_name, a: 1, b: 2, event_name: event_name)
       end
