@@ -56,7 +56,7 @@ class EventBus
     #
     def subscribe(pattern, listener = nil, method_name = nil, &blk)
       case pattern
-      when Regexp, String
+      when Regexp, String, Symbol
         subscribe_pattern(pattern, listener, method_name, &blk)
       else
         raise ArgumentError.new('You cannot give two listeners') if listener || method_name

@@ -80,6 +80,21 @@ describe EventBus do
       end
     end
 
+    context 'with a symbol pattern' do
+      it 'sends the event to a matching listener' do
+        event_name = :abc_123
+        EventBus.subscribe(event_name, listener, receiving_method)
+        listener.should_receive(receiving_method).with(a: 1, b: 2, event_name: event_name)
+        EventBus.publish(event_name, a: 1, b: 2)
+      end
+
+      it 'does not send the event to non-matching listeners' do
+        EventBus.subscribe(:blah, listener, receiving_method)
+        listener.should_not_receive(receiving_method)
+        EventBus.publish(event_name, a: 1, b: 2, event_name: event_name)
+      end
+    end
+
     context 'with a listener method' do
       it 'will not accept a block too' do
         expect { EventBus.subscribe('blah', listener, receiving_method) {|info| }}.to raise_error(ArgumentError)
