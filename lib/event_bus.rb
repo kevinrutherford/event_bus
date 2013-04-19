@@ -78,16 +78,6 @@ class EventBus
       self
     end
 
-    #
-    # (experimental)
-    #
-    def register(listener)
-      listener.events_map.each do |pattern, method_name|
-        registrations.add(pattern, listener, method_name)
-      end
-      self
-    end
-
     private
 
     def subscribe_pattern(pattern, listener, method_name, &blk)

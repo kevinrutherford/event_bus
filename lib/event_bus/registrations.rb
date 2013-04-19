@@ -22,14 +22,6 @@ class EventBus
       @listeners = []
     end
 
-    def add(pattern, listener, method_name, &blk)
-      if listener
-        add_method(pattern, listener, method_name)
-      else
-        add_block(pattern, blk)
-      end
-    end
-
     def add_method(pattern, listener, method_name)
       @listeners << Registration.new(pattern, listener, method_name)
     end
