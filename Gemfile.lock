@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    event_bus (0.1.1)
+    event_bus (1.0.0)
 
 GEM
   remote: https://rubygems.org/
