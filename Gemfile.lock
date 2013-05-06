@@ -6,8 +6,9 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    diff-lcs (1.2.3)
-    multi_json (1.7.2)
+    diff-lcs (1.2.4)
+    json (1.7.7)
+    multi_json (1.7.3)
     rake (10.0.4)
     rspec (2.13.0)
       rspec-core (~> 2.13.0)
@@ -27,6 +28,7 @@ PLATFORMS
 
 DEPENDENCIES
   event_bus!
+  json
   rake (~> 10.0.1)
   rspec (~> 2.12)
   simplecov
