@@ -69,6 +69,22 @@ class EventBus
     alias :listen_for :subscribe
 
     #
+    # Register a global error handler
+    #
+    # The supplied block will be called once for each error that is raised by
+    # any listener, for any event.
+    #
+    # The block will be provided with two parameters, the listener that errored,
+    # and the payload of the event.
+    #
+    # @param blk the block to be called when any unhandled error occurs in a listener
+    # @return [EventBus] the EventBus, ready to be called again
+    def on_error(&blk)
+      registrations.on_error &blk
+      self
+    end
+
+    #
     # Delete all current listener registrations
     #
     # @return the EventBus, ready to be called again.
