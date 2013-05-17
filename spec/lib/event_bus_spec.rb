@@ -56,7 +56,7 @@ describe EventBus do
       error_handler.stub(:handle_error) {}
     end
 
-    it "sends the event to the second listner when the first errors" do
+    it 'sends the event to the second listener when the first errors' do
       EventBus.subscribe(event_name, erroring_listener, receiving_method)
       EventBus.subscribe(event_name, listener, receiving_method)
 
@@ -64,9 +64,9 @@ describe EventBus do
       listener.should have_received(receiving_method).with(event_name: event_name)
     end
 
-    it "calls the error handler on an error when the listener is an object" do
+    it 'calls the error handler on an error when the listener is an object' do
       EventBus.subscribe(event_name, erroring_listener, receiving_method)
-      EventBus.on_error do |listener, full_payload| 
+      EventBus.on_error do |listener, full_payload|
         error_handler.handle_error listener, full_payload
       end
 
@@ -75,12 +75,12 @@ describe EventBus do
       error_handler.should have_received(:handle_error).with(erroring_listener, event_name: event_name)
     end
 
-    it "calls the error handler on an error when the listener is a block" do
+    it 'calls the error handler on an error when the listener is a block' do
       EventBus.subscribe(event_name) do |info|
         raise RuntimeError.new
       end
 
-      EventBus.on_error do |listener, full_payload| 
+      EventBus.on_error do |listener, full_payload|
         error_handler.handle_error listener, full_payload
       end
 

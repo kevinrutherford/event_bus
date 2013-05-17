@@ -10,18 +10,7 @@ class EventBus
     def announce(event_name, payload)
       full_payload = {event_name: event_name}.merge(payload)
       listeners.each do |listener|
-        begin
-          listener.respond(event_name, full_payload)
-        rescue => error
-          source = case listener
-                   when Registration
-                     listener.listener
-                   when BlockRegistration
-                     listener.block
-                   end
-
-          error_handler.call(source, full_payload) if error_handler
-        end
+        pass_event_to listener, event_name, full_payload
       end
     end
 
@@ -48,18 +37,34 @@ class EventBus
     end
 
     def error_handler
-      @error_handler 
+      @error_handler
+    end
+
+    def pass_event_to(listener, event_name, payload)
+      begin
+        listener.respond(event_name, payload)
+      rescue => error
+        error_handler.call(listener.receiver, payload) if error_handler
+      end
     end
 
     Registration = Struct.new(:pattern, :listener, :method_name) do
       def respond(event_name, payload)
         listener.send(method_name, payload) if pattern === event_name
       end
+
+      def receiver
+        listener
+      end
     end
 
     BlockRegistration = Struct.new(:pattern, :block) do
       def respond(event_name, payload)
         block.call(payload) if pattern === event_name
+      end
+
+      def receiver
+        block
       end
     end
 
