@@ -41,12 +41,9 @@ describe EventBus do
   end
 
   describe 'publishing with errors' do
-    let(:erroring_listener) { double(:erroring_listener) }
-    let(:error_handler) { double(:error_handler, handle_error: true) }
-
-    before do
-      erroring_listener.stub(:handler) { raise RuntimeError.new }
-    end
+    Given(:erroring_listener) { double(:erroring_listener) }
+    Given(:error_handler) { double(:error_handler, handle_error: true) }
+    Given { erroring_listener.stub(:handler) { raise RuntimeError.new } }
 
     context 'sends the event to the second listener when the first errors' do
       Given { EventBus.subscribe('aa123bb', erroring_listener, :handler) }
@@ -55,28 +52,25 @@ describe EventBus do
       Then { listener.should have_received(:handler).with(event_name: 'aa123bb') }
     end
 
-    context 'calls the error handler on an error when the listener is an object' do
-      Given { EventBus.subscribe('aa123bb', erroring_listener, :handler) }
-      Given { EventBus.on_error do |listener, full_payload|
-        error_handler.handle_error listener, full_payload
+    context 'with an error handler' do
+      Given { EventBus.on_error do |listener, payload|
+        error_handler.handle_error(listener, payload)
       end }
 
-      When { EventBus.publish('aa123bb') }
+      context 'when the listener is an object' do
+        Given { EventBus.subscribe('aa123bb', erroring_listener, :handler) }
+        When { EventBus.publish('aa123bb') }
+        Then { error_handler.should have_received(:handle_error).with(erroring_listener, event_name: 'aa123bb') }
+      end
 
-      Then { error_handler.should have_received(:handle_error).with(erroring_listener, event_name: 'aa123bb') }
+      context 'when the listener is a block' do
+        Given { EventBus.subscribe('aa123bb') {|info| raise RuntimeError.new } }
+        When { EventBus.publish('aa123bb') }
+        Then { error_handler.should have_received(:handle_error).with(instance_of(Proc), event_name: 'aa123bb') }
+      end
+
     end
 
-    context 'calls the error handler on an error when the listener is a block' do
-      Given { EventBus.subscribe('aa123bb') {|info| raise RuntimeError.new } }
-
-      Given { EventBus.on_error do |listener, full_payload|
-        error_handler.handle_error listener, full_payload
-      end }
-
-      When { EventBus.publish('aa123bb') }
-
-      Then { error_handler.should have_received(:handle_error).with(instance_of(Proc), event_name: 'aa123bb') }
-    end
   end
 
   describe 'subscribing' do
@@ -123,39 +117,19 @@ describe EventBus do
       end
     end
 
-    context 'with a listener method' do
-      context 'will not accept a block too' do
-        When(:result) { EventBus.subscribe('blah', listener, :handler) {|info| }}
-        Then { result.should have_failed(ArgumentError) }
-      end
-
-      context 'expects a method name' do
-        When(:result) { EventBus.subscribe('blah', listener) }
-        Then { result.should have_failed(ArgumentError) }
-      end
-    end
-
-    context 'with a block' do
-      context 'requires a block when no listener method is supplied' do
-        When(:result) { EventBus.subscribe('blah') }
-        Then { result.should have_failed(ArgumentError) }
-      end
+    context 'subscribing a block' do
+      Given(:spy) { double(:spy, block_called: nil) }
+      Given {
+        EventBus.subscribe('aa123bb') {|info| spy.block_called(info) }
+      }
 
       context 'calls the block when the event matches' do
-        Given(:spy) { double(:spy, block_called: nil) }
-        Given {
-          EventBus.subscribe('aa123bb') {|info| spy.block_called(info) }
-        }
         When { EventBus.publish('aa123bb', a: 1, b: 2) }
         Then { spy.should have_received(:block_called).with(a: 1, b: 2, event_name: 'aa123bb') }
       end
 
       context 'does not call the block when the event does not match' do
-        Given(:spy) { double(:spy, block_called: nil) }
-        Given {
-          EventBus.subscribe('aa123bb') {|info| spy.block_called(info) }
-        }
-        When { EventBus.publish('blah', a: 1, b: 2) }
+        When { EventBus.publish('blah') }
         Then { spy.should_not have_received(:block_called) }
       end
     end
@@ -180,14 +154,41 @@ describe EventBus do
 
     end
 
-    context 'subscribing with an object and a method' do
-      When(:subscribe) { EventBus.subscribe(listener, double) }
-      Then { subscribe.should have_failed(ArgumentError) }
-    end
+    context 'when called incorrectly' do
 
-    context 'subscribing with an object and a block' do
-      When(:subscribe) { EventBus.subscribe(listener) {|info| } }
-      Then { subscribe.should have_failed(ArgumentError) }
+      context 'when specifying the event name' do
+
+        context 'must provide a method or a block' do
+          When(:subscribe) { EventBus.subscribe('blah', listener) }
+          Then { subscribe.should have_failed(ArgumentError) }
+        end
+
+        context 'cannot provide a method AND a block' do
+          When(:subscribe) { EventBus.subscribe('blah', listener, :handler) {|info| }}
+          Then { subscribe.should have_failed(ArgumentError) }
+        end
+
+        context 'must provide a block when no method is supplied' do
+          When(:subscribe) { EventBus.subscribe('blah') }
+          Then { subscribe.should have_failed(ArgumentError) }
+        end
+
+      end
+
+      context 'when specifying a listener object' do
+
+        context 'when a method is also provided' do
+          When(:subscribe) { EventBus.subscribe(listener, double) }
+          Then { subscribe.should have_failed(ArgumentError) }
+        end
+
+        context 'when a block is also provided' do
+          When(:subscribe) { EventBus.subscribe(listener) {|info| } }
+          Then { subscribe.should have_failed(ArgumentError) }
+        end
+
+      end
+
     end
 
   end
