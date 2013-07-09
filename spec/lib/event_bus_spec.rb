@@ -41,9 +41,10 @@ describe EventBus do
   end
 
   describe 'publishing with errors' do
+    Given(:error) { RuntimeError.new }
     Given(:erroring_listener) { double(:erroring_listener) }
     Given(:error_handler) { double(:error_handler, handle_error: true) }
-    Given { erroring_listener.stub(:handler) { raise RuntimeError.new } }
+    Given { erroring_listener.stub(:handler) { raise error } }
 
     context 'sends the event to the second listener when the first errors' do
       Given { EventBus.subscribe('aa123bb', erroring_listener, :handler) }
@@ -60,13 +61,13 @@ describe EventBus do
       context 'when the listener is an object' do
         Given { EventBus.subscribe('aa123bb', erroring_listener, :handler) }
         When { EventBus.publish('aa123bb') }
-        Then { error_handler.should have_received(:handle_error).with(erroring_listener, event_name: 'aa123bb') }
+        Then { error_handler.should have_received(:handle_error).with(erroring_listener, event_name: 'aa123bb', error: error ) }
       end
 
       context 'when the listener is a block' do
-        Given { EventBus.subscribe('aa123bb') {|info| raise RuntimeError.new } }
+        Given { EventBus.subscribe('aa123bb') {|info| raise error } }
         When { EventBus.publish('aa123bb') }
-        Then { error_handler.should have_received(:handle_error).with(instance_of(Proc), event_name: 'aa123bb') }
+        Then { error_handler.should have_received(:handle_error).with(instance_of(Proc), event_name: 'aa123bb', error: error) }
       end
 
     end

@@ -44,7 +44,7 @@ class EventBus
       begin
         listener.respond(event_name, payload)
       rescue => error
-        error_handler.call(listener.receiver, payload) if error_handler
+        error_handler.call(listener.receiver, payload.merge(error: error)) if error_handler
       end
     end
 
