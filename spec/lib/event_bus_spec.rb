@@ -7,6 +7,16 @@ describe EventBus do
     EventBus.clear
   end
 
+  describe "testing" do
+    it "adds then removes the handler" do
+      EventBus.with_temporary_subscriber(/test/, listener, :handler) do
+        EventBus.publish 'test'
+      end
+      listener.should have_received(:handler).with(event_name: 'test')
+      EventBus.send(:registrations).send(:listeners).should be_empty
+    end
+  end
+
   describe 'publishing' do
 
     context 'accepts a string for the event name' do

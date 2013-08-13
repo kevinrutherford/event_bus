@@ -7,5 +7,6 @@ require 'rspec-given'
 SimpleCov.start
 
 require 'event_bus'
+require 'event_bus/testing'
 
 
