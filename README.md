@@ -20,6 +20,7 @@ Climate](https://codeclimate.com/github/kevinrutherford/event_bus.png)](https://
 * Subscribe to events using names or regex patterns.
 * Works with Rails.
 * Works without Rails.
+* Works with Sidekiq.
 
 ## Installation
 
@@ -48,11 +49,24 @@ class PlaceOrder
 end
 ```
 
+### Publishing background events using sidekiq
+
+Publish events whenever something significant happens in your application:
+
+```ruby
+class PlaceOrder
+  //...
+  EventBus.bg_announce(:order_placed, order: current_order, customer: current_user)
+end
+```
+
 The event name (first argument) can be a String or a Symbol.
 The Hash is optional and supplies a payload of information to any subscribers.
 
 (If you don't like the method name `announce` you can use `publish` or
 `broadcast` instead.)
+(If you don't like the method name `bg_announce` you can use `bg_publish` or
+`bg_broadcast` instead
 
 ### Subscribing to events
 
@@ -115,6 +129,24 @@ There are three ways to subscribe to events.
     ```ruby
     EventBus.subscribe(/order/) do |payload|
       order = payload[:order]
+      //...
+    end
+    ```
+
+#### Subscribe to background published events
+
+due to a limitation using [Sidekiq](https://github.com/mperham/sidekiq),
+you can not subscribe to events published using `bg_announce` using Symbols in either `event_name` or `payload`.
+you can via Reqexp, Strings or listener objects.
+
+
+    ```ruby
+    EventBus.subscribe('order_placed', StatsRecorder.new, :print_order)
+    ```
+
+    ```ruby
+    EventBus.subscribe('order_placed') do |payload|
+      order = payload['order']
       //...
     end
     ```
