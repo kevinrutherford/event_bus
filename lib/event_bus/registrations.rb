@@ -50,7 +50,7 @@ class EventBus
 
     Registration = Struct.new(:pattern, :listener, :method_name) do
       def respond(event_name, payload)
-        listener.send(method_name, payload) if pattern === event_name
+        listener.send(method_name, payload) if pattern === event_name or pattern === event_name.to_sym
       end
 
       def receiver
