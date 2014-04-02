@@ -140,16 +140,16 @@ you can not subscribe to events published using `bg_announce` using Symbols in e
 you can via Reqexp, Strings or listener objects.
 
 
-    ```ruby
-    EventBus.subscribe('order_placed', StatsRecorder.new, :print_order)
-    ```
+```ruby
+EventBus.subscribe('order_placed', StatsRecorder.new, :print_order)
+```
 
-    ```ruby
-    EventBus.subscribe('order_placed') do |payload|
-      order = payload['order']
-      //...
-    end
-    ```
+```ruby
+EventBus.subscribe('order_placed') do |payload|
+order = payload['order']
+//...
+end
+```
 
 See the specs for more detailed usage scenarios.
 
