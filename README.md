@@ -20,6 +20,9 @@ Climate](https://codeclimate.com/github/kevinrutherford/event_bus.png)](https://
 * Subscribe to events using names or regex patterns.
 * Works with Rails.
 * Works without Rails.
+* Completely synchronous (use the
+  [event_bg_bus](https://rubygems.org/gems/event_bg_bus) gem for async operation
+  using Sidekiq).
 
 ## Installation
 
@@ -123,7 +126,7 @@ See the specs for more detailed usage scenarios.
 
 ## Compatibility
 
-Tested with Ruby 1.9.x, JRuby, Rubinius.
+Tested with Ruby 2.1, 2.0, 1.9.x, JRuby.
 See the [build status](https://travis-ci.org/kevinrutherford/event_bus)
 for details.
 
