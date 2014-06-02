@@ -94,6 +94,25 @@ class EventBus
       self
     end
 
+    #
+    # Adds a subscriber that only listens for the duration of the block. Mostly
+    # useful for testing event dispatching.
+    #
+    # @param pattern [String, Regexp] listen for any events whose name matches this pattern
+    # @param listener the object to be notified when a matching event occurs
+    # @param method_name [Symbol] the method to be called on +listener+ when a matching event occurs
+    # @return [EventBus] the EventBus, ready to be called again.
+    def with_temporary_subscriber(pattern, listener = nil, method_name = nil)
+      subscribe(pattern, listener, method_name)
+      temporary_subscriber = registrations.last_subscriber
+
+      yield
+
+      self
+    ensure
+      registrations.remove_subscriber(temporary_subscriber)
+    end
+
     private
 
     def subscribe_pattern(pattern, listener, method_name, &blk)
