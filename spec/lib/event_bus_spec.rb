@@ -7,6 +7,21 @@ describe EventBus do
     EventBus.clear
   end
 
+  describe "a temporary subscriber" do
+    context "receives events during the subscription block" do
+      When { EventBus.with_temporary_subscriber(/test/, listener, :handler) { EventBus.publish 'test'} }
+      Then { listener.should have_received(:handler).with(event_name: 'test') }
+    end
+
+    context "does not receive events after the subscription block" do
+      Given { EventBus.with_temporary_subscriber(/test/, listener, :handler) {  } }
+      When { EventBus.publish 'test' }
+      Then { listener.should_not have_received(:handler).with(event_name: 'test') }
+    end
+
+
+  end
+
   describe 'publishing' do
 
     context 'accepts a string for the event name' do
@@ -221,6 +236,10 @@ describe EventBus do
       Then { result.should == EventBus }
     end
 
+    context 'with_temporary_subscriber' do
+      When(:result) { EventBus.with_temporary_subscriber('aa123bb', listener, :handler) { } }
+      Then { result.should == EventBus }
+    end
   end
 
 end

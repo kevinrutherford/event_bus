@@ -30,8 +30,15 @@ class EventBus
       @error_handler = blk
     end
 
-    private
+    def remove_subscriber(subscriber)
+      listeners.delete subscriber
+    end
 
+    def last_subscriber
+      listeners.last
+    end
+
+    private
     def listeners
       @listeners ||= []
     end
