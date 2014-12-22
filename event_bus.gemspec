@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.homepage    = 'http://github.com/kevinrutherford/event_bus'
 
   s.add_development_dependency 'json'
-  s.add_development_dependency 'rake', '~> 10.0.1'
+  s.add_development_dependency 'rake'
   s.add_development_dependency 'rspec', '~> 2.12'
   s.add_development_dependency 'rspec-given'
   s.add_development_dependency 'rspec-spies'
