@@ -7,82 +7,84 @@ describe EventBus do
     EventBus.clear
   end
 
-  describe "a temporary subscriber" do
-    context "receives events during the subscription block" do
-      When { EventBus.with_temporary_subscriber(/test/, listener, :handler) { EventBus.publish 'test'} }
-      Then { listener.should have_received(:handler).with(event_name: 'test') }
+  describe 'a temporary subscriber' do
+    example 'receives events during the subscription block' do
+      expect(listener).to receive(:handler).with(event_name: 'test')
+      EventBus.with_temporary_subscriber(/test/, listener, :handler) { EventBus.publish 'test'}
     end
 
-    context "does not receive events after the subscription block" do
-      Given { EventBus.with_temporary_subscriber(/test/, listener, :handler) {  } }
-      When { EventBus.publish 'test' }
-      Then { listener.should_not have_received(:handler).with(event_name: 'test') }
+    example 'does not receive events after the subscription block' do
+      expect(listener).to_not receive(:handler).with(event_name: 'test')
+      EventBus.with_temporary_subscriber(/test/, listener, :handler) {  }
+      EventBus.publish 'test'
     end
-
-
   end
 
   describe 'publishing' do
 
-    context 'accepts a string for the event name' do
-      Given { EventBus.subscribe(/aa123bb/, listener, :handler) }
-      When { EventBus.publish('aa123bb') }
-      Then { listener.should have_received(:handler).with(event_name: 'aa123bb') }
+    it 'accepts a string for the event name' do
+      expect(listener).to receive(:handler).with(event_name: 'aa123bb')
+      EventBus.subscribe(/aa123bb/, listener, :handler)
+      EventBus.publish('aa123bb')
     end
 
-    context 'accepts a symbol for the event name' do
-      Given { EventBus.subscribe(/aa123bb/, listener, :handler) }
-      When { EventBus.publish(:aa123bb) }
-      Then { listener.should have_received(:handler).with(event_name: :aa123bb) }
+    it 'accepts a symbol for the event name' do
+      expect(listener).to receive(:handler).with(event_name: :aa123bb)
+      EventBus.subscribe(/aa123bb/, listener, :handler)
+      EventBus.publish(:aa123bb)
     end
 
-    context 'rejects any other type as the event name' do
-      When(:result) { EventBus.publish(123) }
-      Then { result.should have_failed(ArgumentError) }
+    it 'rejects any other type as the event name' do
+      expect { EventBus.publish(123) }.to raise_exception(ArgumentError)
     end
 
-    context 'adds the event name to the payload' do
-      Given { EventBus.subscribe('aa123bb', listener, :handler) }
-      When { EventBus.publish('aa123bb', a: 56) }
-      Then { listener.should have_received(:handler).with(event_name: 'aa123bb', a: 56) }
+    it 'adds the event name to the payload' do
+      expect(listener).to receive(:handler).with(event_name: 'aa123bb', a: 56)
+      EventBus.subscribe('aa123bb', listener, :handler)
+      EventBus.publish('aa123bb', a: 56)
     end
 
-    context 'allows the payload to be omitted' do
-      Given { EventBus.subscribe('aa123bb', listener, :handler) }
-      When { EventBus.publish('aa123bb') }
-      Then { listener.should have_received(:handler).with(event_name: 'aa123bb') }
+    it 'allows the payload to be omitted' do
+      expect(listener).to receive(:handler).with(event_name: 'aa123bb')
+      EventBus.subscribe('aa123bb', listener, :handler)
+      EventBus.publish('aa123bb')
     end
 
   end
 
   describe 'publishing with errors' do
-    Given(:error) { RuntimeError.new }
-    Given(:erroring_listener) { double(:erroring_listener) }
-    Given(:error_handler) { double(:error_handler, handle_error: true) }
-    Given { erroring_listener.stub(:handler) { raise error } }
+    let(:error) { RuntimeError.new }
+    let(:erroring_listener) { double(:erroring_listener) }
+    let(:error_handler) { double(:error_handler, handle_error: true) }
 
-    context 'sends the event to the second listener when the first errors' do
-      Given { EventBus.subscribe('aa123bb', erroring_listener, :handler) }
-      Given { EventBus.subscribe('aa123bb', listener, :handler) }
-      When { EventBus.publish('aa123bb') }
-      Then { listener.should have_received(:handler).with(event_name: 'aa123bb') }
+    before do
+      allow(erroring_listener).to receive(:handler) { raise error }
+    end
+
+    it 'sends the event to the second listener when the first errors' do
+      expect(listener).to receive(:handler).with(event_name: 'aa123bb')
+      EventBus.subscribe('aa123bb', erroring_listener, :handler)
+      EventBus.subscribe('aa123bb', listener, :handler)
+      EventBus.publish('aa123bb')
     end
 
     context 'with an error handler' do
-      Given { EventBus.on_error do |listener, payload|
-        error_handler.handle_error(listener, payload)
-      end }
-
-      context 'when the listener is an object' do
-        Given { EventBus.subscribe('aa123bb', erroring_listener, :handler) }
-        When { EventBus.publish('aa123bb') }
-        Then { error_handler.should have_received(:handle_error).with(erroring_listener, event_name: 'aa123bb', error: error ) }
+      before do
+        EventBus.on_error do |listener, payload|
+          error_handler.handle_error(listener, payload)
+        end
       end
 
-      context 'when the listener is a block' do
-        Given { EventBus.subscribe('aa123bb') {|info| raise error } }
-        When { EventBus.publish('aa123bb') }
-        Then { error_handler.should have_received(:handle_error).with(instance_of(Proc), event_name: 'aa123bb', error: error) }
+      it 'when the listener is an object' do
+        expect(error_handler).to receive(:handle_error).with(erroring_listener, event_name: 'aa123bb', error: error)
+        EventBus.subscribe('aa123bb', erroring_listener, :handler)
+        EventBus.publish('aa123bb')
+      end
+
+      it 'when the listener is a block' do
+        expect(error_handler).to receive(:handle_error).with(instance_of(Proc), event_name: 'aa123bb', error: error)
+        EventBus.subscribe('aa123bb') {|info| raise error }
+        EventBus.publish('aa123bb')
       end
 
     end
@@ -92,117 +94,109 @@ describe EventBus do
   describe 'subscribing' do
 
     context 'with a regex pattern' do
-      context 'sends the event to a matching listener' do
-        Given { EventBus.subscribe(/123b/, listener, :handler) }
-        When { EventBus.publish('aa123bb', a: 1, b: 2) }
-        Then { listener.should have_received(:handler).with(a: 1, b: 2, event_name: 'aa123bb') }
+      it 'sends the event to a matching listener' do
+        expect(listener).to receive(:handler).with(a: 1, b: 2, event_name: 'aa123bb')
+        EventBus.subscribe(/123b/, listener, :handler)
+        EventBus.publish('aa123bb', a: 1, b: 2)
       end
 
-      context 'does not send the event to non-matching listeners' do
-        Given { EventBus.subscribe(/123a/, listener, :handler) }
-        When { EventBus.publish('aa123bb', a: 1, b: 2, event_name: 'aa123bb') }
-        Then { listener.should_not have_received(:handler) }
+      it 'does not send the event to non-matching listeners' do
+        expect(listener).to_not receive(:handler)
+        EventBus.subscribe(/123a/, listener, :handler)
+        EventBus.publish('aa123bb', a: 1, b: 2, event_name: 'aa123bb')
       end
     end
 
     context 'with a string pattern' do
-      context 'sends the event to a matching listener' do
-        Given { EventBus.subscribe('aa123bb', listener, :handler) }
-        When { EventBus.publish('aa123bb', a: 1, b: 2) }
-        Then { listener.should have_received(:handler).with(a: 1, b: 2, event_name: 'aa123bb') }
+      it 'sends the event to a matching listener' do
+        expect(listener).to receive(:handler).with(a: 1, b: 2, event_name: 'aa123bb')
+        EventBus.subscribe('aa123bb', listener, :handler)
+        EventBus.publish('aa123bb', a: 1, b: 2)
       end
 
-      context 'does not send the event to non-matching listeners' do
-        Given { EventBus.subscribe('blah', listener, :handler) }
-        When { EventBus.publish('aa123bb', a: 1, b: 2, event_name: 'aa123bb') }
-        Then { listener.should_not have_received(:handler) }
+      it 'does not send the event to non-matching listeners' do
+        expect(listener).to_not receive(:handler)
+        EventBus.subscribe('blah', listener, :handler)
+        EventBus.publish('aa123bb', a: 1, b: 2, event_name: 'aa123bb')
       end
     end
 
     context 'with a symbol pattern' do
-      context 'sends the event to a matching listener' do
-        Given { EventBus.subscribe(:aa123bb, listener, :handler) }
-        When { EventBus.publish(:aa123bb, a: 1, b: 2) }
-        Then { listener.should have_received(:handler).with(a: 1, b: 2, event_name: :aa123bb) }
+      it 'sends the event to a matching listener' do
+        expect(listener).to receive(:handler).with(a: 1, b: 2, event_name: :aa123bb)
+        EventBus.subscribe(:aa123bb, listener, :handler)
+        EventBus.publish(:aa123bb, a: 1, b: 2)
       end
 
-      context 'does not send the event to non-matching listeners' do
-        Given { EventBus.subscribe(:blah, listener, :handler) }
-        When { EventBus.publish('aa123bb', a: 1, b: 2, event_name: 'aa123bb') }
-        Then { listener.should_not have_received(:handler) }
+      it 'does not send the event to non-matching listeners' do
+        expect(listener).to_not receive(:handler)
+        EventBus.subscribe(:blah, listener, :handler)
+        EventBus.publish('aa123bb', a: 1, b: 2, event_name: 'aa123bb')
       end
     end
 
     context 'subscribing a block' do
-      Given(:spy) { double(:spy, block_called: nil) }
-      Given {
+      let(:spy) { double(:spy, block_called: nil) }
+
+      before {
         EventBus.subscribe('aa123bb') {|info| spy.block_called(info) }
       }
 
-      context 'calls the block when the event matches' do
-        When { EventBus.publish('aa123bb', a: 1, b: 2) }
-        Then { spy.should have_received(:block_called).with(a: 1, b: 2, event_name: 'aa123bb') }
+      it 'calls the block when the event matches' do
+        expect(spy).to receive(:block_called).with(a: 1, b: 2, event_name: 'aa123bb')
+        EventBus.publish('aa123bb', a: 1, b: 2)
       end
 
-      context 'does not call the block when the event does not match' do
-        When { EventBus.publish('blah') }
-        Then { spy.should_not have_received(:block_called) }
+      it 'does not call the block when the event does not match' do
+        expect(spy).to_not receive(:block_called)
+        EventBus.publish('blah')
       end
     end
 
     context 'with a listener object' do
-      Given { EventBus.subscribe(listener) }
+      before { EventBus.subscribe(listener) }
 
-      context 'calls a listener method whose name matches the event name' do
-        When { EventBus.publish('handler', a: 2, b: 3) }
-        Then { listener.should have_received(:handler).with(a: 2, b: 3, event_name: 'handler') }
+      it 'calls a listener method whose name matches the event name' do
+        expect(listener).to receive(:handler).with(a: 2, b: 3, event_name: 'handler')
+        EventBus.publish('handler', a: 2, b: 3)
       end
 
-      context 'calls a listener method with symbol whose name matches the event name' do
-        When { EventBus.publish(:handler, a: 2, b: 3) }
-        Then { listener.should have_received(:handler).with(a: 2, b: 3, event_name: :handler) }
+      it 'calls a listener method with symbol whose name matches the event name' do
+        expect(listener).to receive(:handler).with(a: 2, b: 3, event_name: :handler)
+        EventBus.publish(:handler, a: 2, b: 3)
       end
 
-      context 'calls no method when there is no name match' do
-        When { EventBus.publish('b_method') }
-        Then { listener.should_not have_received(:handler) }
+      it 'calls no method when there is no name match' do
+        expect(listener).to_not receive(:handler)
+        EventBus.publish('b_method')
       end
 
     end
 
-    context 'when called incorrectly' do
+    context 'when specifying the event name' do
 
-      context 'when specifying the event name' do
-
-        context 'must provide a method or a block' do
-          When(:subscribe) { EventBus.subscribe('blah', listener) }
-          Then { subscribe.should have_failed(ArgumentError) }
-        end
-
-        context 'cannot provide a method AND a block' do
-          When(:subscribe) { EventBus.subscribe('blah', listener, :handler) {|info| }}
-          Then { subscribe.should have_failed(ArgumentError) }
-        end
-
-        context 'must provide a block when no method is supplied' do
-          When(:subscribe) { EventBus.subscribe('blah') }
-          Then { subscribe.should have_failed(ArgumentError) }
-        end
-
+      example 'a method or a block must be provided' do
+        expect { EventBus.subscribe('blah', listener) }.to raise_exception(ArgumentError)
       end
 
-      context 'when specifying a listener object' do
+      example 'a method AND a block cannot both be given' do
+        expect { EventBus.subscribe('blah', listener, :handler) {|info| }}.to raise_exception(ArgumentError)
+      end
 
-        context 'when a method is also provided' do
-          When(:subscribe) { EventBus.subscribe(listener, double) }
-          Then { subscribe.should have_failed(ArgumentError) }
-        end
+      example 'a block must be provided when no method is supplied' do
+        expect { EventBus.subscribe('blah') }.to raise_exception(ArgumentError)
+      end
 
-        context 'when a block is also provided' do
-          When(:subscribe) { EventBus.subscribe(listener) {|info| } }
-          Then { subscribe.should have_failed(ArgumentError) }
-        end
+    end
 
+    context 'when specifying a listener object' do
+
+      example 'a method must not be given' do
+        expect { EventBus.subscribe(listener, double) }.to raise_exception(ArgumentError)
+      end
+
+      example 'a block must not be given' do
+        expect { EventBus.subscribe(listener) {|info| } }.to raise_exception(ArgumentError)
       end
 
     end
@@ -210,35 +204,31 @@ describe EventBus do
   end
 
   describe '.clear' do
-    context 'removes all previous registrants' do
-      Given { EventBus.subscribe('aa123bb', listener, :handler) }
-      Given { EventBus.clear }
-      When { EventBus.publish('aa123bb', {}) }
-      Then { listener.should_not have_received(:handler) }
+    it 'removes all previous registrants' do
+      EventBus.subscribe('aa123bb', listener, :handler)
+      EventBus.clear
+      expect(listener).to_not receive(:handler)
+      EventBus.publish('aa123bb', {})
     end
 
   end
 
-  context 'EventBus methods cascade' do
+  context 'when calling several EventBus methods' do
 
-    context 'clear' do
-      When(:result) { EventBus.clear }
-      Then { result.should == EventBus }
+    example 'clear() can be cascaded' do
+      expect(EventBus.clear).to be == EventBus
     end
 
-    context 'publish' do
-      When(:result) { EventBus.publish('aa123bb', {}) }
-      Then { result.should == EventBus }
+    example 'publish() can be cascaded' do
+      expect(EventBus.publish('aa123bb', {})).to be == EventBus
     end
 
-    context 'subscribe' do
-      When(:result) { EventBus.subscribe('aa123bb', listener, :handler) }
-      Then { result.should == EventBus }
+    example 'subscribe() can be cascaded' do
+      expect(EventBus.subscribe('aa123bb', listener, :handler)).to be == EventBus
     end
 
-    context 'with_temporary_subscriber' do
-      When(:result) { EventBus.with_temporary_subscriber('aa123bb', listener, :handler) { } }
-      Then { result.should == EventBus }
+    example 'with_temporary_subscriber() can be cascaded' do
+      expect(EventBus.with_temporary_subscriber('aa123bb', listener, :handler) { }).to be == EventBus
     end
   end
 
