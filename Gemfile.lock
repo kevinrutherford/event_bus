@@ -8,7 +8,6 @@ GEM
   specs:
     diff-lcs (1.2.4)
     json (1.8.0)
-    multi_json (1.7.3)
     rake (10.0.4)
     rspec (2.13.0)
       rspec-core (~> 2.13.0)
@@ -23,10 +22,6 @@ GEM
     rspec-mocks (2.13.1)
     rspec-spies (2.1.4)
       rspec (~> 2.0)
-    simplecov (0.7.1)
-      multi_json (~> 1.0)
-      simplecov-html (~> 0.7.1)
-    simplecov-html (0.7.1)
     sorcerer (0.3.10)
 
 PLATFORMS
@@ -39,4 +34,3 @@ DEPENDENCIES
   rspec (~> 2.12)
   rspec-given
   rspec-spies
-  simplecov
