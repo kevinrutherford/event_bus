@@ -8,8 +8,8 @@ Gem::Specification.new do |s|
   s.email       = 'kevin@rutherford-software.com'
   s.homepage    = 'http://github.com/kevinrutherford/event_bus'
 
-  s.add_development_dependency 'json'
-  s.add_development_dependency 'rake'
+  s.add_development_dependency 'json', '~> 0'
+  s.add_development_dependency 'rake', '~> 0'
   s.add_development_dependency 'rspec', '2.12'
   s.add_development_dependency 'rspec-given'
   s.add_development_dependency 'rspec-spies'
