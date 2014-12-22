@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'event_bus'
-  s.version     = '1.1.0'
+  s.version     = '1.1.1'
   s.date        = '2014-12-22'
   s.summary     = 'A simple pubsub event bus for Ruby applications'
   s.description = 'event_bus provides support for application-wide events, without coupling the publishing and subscribing objects or classes to each other'
