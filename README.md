@@ -126,7 +126,7 @@ See the specs for more detailed usage scenarios.
 
 ### Error Handling
 
-Any exception risen by the event listeners will be swallowed not affecting the execution flow. In order to handle errors you can register a global error handler:
+Any exception raised by the event listeners will be swallowed, and will not affect the execution flow. In order to handle errors you can register a global error handler:
 
 ```ruby
 EventBus.on_error do |listener, payload|
@@ -136,7 +136,7 @@ end
 
 The supplied block will be called once for each error that is raised by any listener, for any event.
 
-The block will be provided with two parameters, the listener that errored, and the payload of the event. The payload of the event will have an extra `error` value containing the exception object that was risen:
+The block will be provided with two parameters, the listener that errored, and the payload of the event. The payload of the event will have an extra `error` value containing the exception object that was raised:
 
 ```ruby
 EventBus.on_error do |listener, payload|
