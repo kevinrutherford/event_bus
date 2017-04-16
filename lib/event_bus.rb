@@ -127,10 +127,7 @@ class EventBus
     end
 
     def subscribe_obj(listener)
-      registrations.add_block(/.*/) do |payload|
-        method = payload[:event_name].to_sym
-        listener.send(method, payload) if listener.respond_to?(method)
-      end
+      registrations.add_method(/.*/, listener, nil)
     end
 
     def registrations
